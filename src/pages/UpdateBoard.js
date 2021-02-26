@@ -51,13 +51,13 @@ const UpdateBoard = ({ match, location, history }) => {
     const UpdateClick = (e) => {
         e.preventDefault();
         updateBoard({ variables: { id: parseInt(userid), title: state.title, content: state.content } });
-        history.push('/');
+        history.push('/'); //해당 코드에서 문제가 발생한 것으로 보임. 해결하기 위해선 useEffect를 써야할지도,,
     }
 
     const DeleteClick = (e) => {
         e.preventDefault();
         deleteBoard({variables: {id:parseInt(userid)} });
-        history.push('/');
+        history.push('/'); //해당 코드에서 문제가 발생한 것으로 보임. 해결하기 위해선 useEffect를 써야할지도,,
     }
 
     const { loading, error, data } = useQuery(BOARD_QUERY, {variables: {id: parseInt(userid)}});
