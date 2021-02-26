@@ -15,8 +15,8 @@
   > 
 
 ## 현재 문제점
-  > graphql에 데이터가 반영되기 전에 페이지가 돌아가 lifeCycle이 정상적으로 작동하지 않음.
+  > graphql에 데이터가 반영되기 전에 [홈페이지로 돌아가](https://github.com/SausageMania/React-Board/blob/main/src/pages/UpdateBoard.js#L54) lifeCycle이 정상적으로 작동하지 않음.
 
 ## 앞으로 남은 과제
-  > pagination으로 게시글 나누기
+  > pagination으로 게시글 나누기  
   > 검색 기능으로 query 분류하여 웹에 띄우기
