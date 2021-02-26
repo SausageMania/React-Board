@@ -11,7 +11,7 @@
   > [delete](https://github.com/SausageMania/React-Board/blob/main/src/pages/UpdateBoard.js#L29)
 ## react-bootstrap의 Bootstrap4을 이용하여 기본 UI/UX를 구상.
   > [Table](https://github.com/SausageMania/React-Board/blob/main/src/pages/BoardList.js#L41) tag를 이용하여 게시판 홈페이지를 만듦.  
-  > [Form](https://github.com/SausageMania/React-Board/blob/main/src/pages/UpdateBoard.js#L71)tag를 이용하여 user의 게시글 페이지 및 게시글 생성 페이지를 만듦.  
+  > [Form](https://github.com/SausageMania/React-Board/blob/main/src/pages/UpdateBoard.js#L71) tag를 이용하여 user의 게시글 페이지 및 게시글 생성 페이지를 만듦.  
   > 
 
 ## 현재 문제점
