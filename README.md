@@ -3,7 +3,7 @@
   > React의 함수형 컴포넌트를 이용함  
   > Apollo-client로 백엔드의 서버와 연결. ([http://172.26.50.29:4000](https://github.com/SausageMania/React-Board/blob/main/src/index.js#L10))  
   > react-router-dom으로 [**/create**](https://github.com/SausageMania/React-Board/blob/main/src/App.js#L12), [**/update/:id**](https://github.com/SausageMania/React-Board/blob/main/src/App.js#L13) url을 연결함. 
-## GraphQ-tag로 CRUD를 구현.
+## GraphQL-tag로 CRUD를 구현.
   > [create](https://github.com/SausageMania/React-Board/blob/main/src/pages/CreateBoard.js#L8)  
   > [read #1](https://github.com/SausageMania/React-Board/blob/main/src/pages/BoardList.js#L8)  
   > [read #2](https://github.com/SausageMania/React-Board/blob/main/src/pages/UpdateBoard.js#L9)  
