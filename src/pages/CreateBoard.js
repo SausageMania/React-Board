@@ -5,7 +5,7 @@ import gql from 'graphql-tag';
 import { withRouter } from 'react-router-dom';
 
 const BOARD_MUTATION = gql`
-    mutation addBoard($id:int, $title: String!, $author: String!, $content: String!){
+    mutation addBoard($title: String!, $author: String!, $content: String!){
         addBoard(title: $title, author: $author, content: $content){
             title
             author

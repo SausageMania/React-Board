@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import qs from 'qs';
+import React, { useState } from 'react';
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import { Form, Col, Button } from 'react-bootstrap';
 
 
 const BOARD_QUERY = gql`
-query($id: Int!){
-    board(id: $id){
+query($_id: String!){
+    getBoard(_id: $_id){
         title
         content
         author
@@ -16,9 +15,9 @@ query($id: Int!){
 `
 
 const BOARD_UPDATE = gql`
-    mutation updateBoard($id: Int!, $title: String, $content: String){
-        updateBoard(id: $id, title: $title, content: $content){
-            id
+    mutation updateBoard($_id: String!, $title: String, $content: String){
+        updateBoard(_id: $_id, title: $title, content: $content){
+            _id
             title
             content
         }
@@ -26,14 +25,14 @@ const BOARD_UPDATE = gql`
 `
 
 const BOARD_DELETE = gql`
-    mutation deleteBoard($id:Int){
-        deleteBoard(id:$id){
-            id
+    mutation deleteBoard($_id:String){
+        deleteBoard(_id:$_id){
+            _id
         }
     }
 `
 
-const UpdateBoard = (props, { match, location, history }) => {
+const UpdateBoard = ({ match, location, history }) => {
     const { userid } = match.params;
     const [updateBoard] = useMutation(BOARD_UPDATE);
     const [deleteBoard] = useMutation(BOARD_DELETE);
@@ -41,7 +40,8 @@ const UpdateBoard = (props, { match, location, history }) => {
     const [state, setState] = useState({
     });
 
-    
+    const { loading, error, data } = useQuery(BOARD_QUERY, {variables: {_id: userid} });
+   
     const HandleChange = (e) => {
         setState({
             ...state,
@@ -51,25 +51,21 @@ const UpdateBoard = (props, { match, location, history }) => {
 
     const UpdateClick = (e) => {
         e.preventDefault();
-        updateBoard({ variables: { id: parseInt(userid), title: state.title, content: state.content } });
+        updateBoard({ variables: { _id: userid, title: state.title, content: state.content } });
         history.push('/'); //해당 코드에서 문제가 발생한 것으로 보임. 해결하기 위해선 useEffect를 써야할지도,,
     }
 
     const DeleteClick = (e) => {
         e.preventDefault();
-        deleteBoard({variables: {id:parseInt(userid)} });
+        deleteBoard({variables: {_id:userid} });
         history.push('/'); //해당 코드에서 문제가 발생한 것으로 보임. 해결하기 위해선 useEffect를 써야할지도,,
     }
 
-    const { loading, error, data } = useQuery(BOARD_QUERY, {variables: {id: parseInt(userid)}});
-    const userData = data.board;
-    useEffect(()=>{
-        history.push('/');
-    },userData.updatedAt)
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error</p>;    
     
+    const userData = data.getBoard;
     return (
         <div className="m-3 p-5">
             <Form>
