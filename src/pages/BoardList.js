@@ -1,14 +1,14 @@
 import React, {useEffect} from 'react';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
-import { Table, Button } from 'react-bootstrap';
+import { Table, Button, Form } from 'react-bootstrap';
 import { Route, Link, useHistory } from 'react-router-dom';
 import CreateBoard from './CreateBoard';
 
 const BOARDS_QUERY = gql`
 {
     boards{
-        id
+        _id
         title
         content
         author
@@ -17,25 +17,35 @@ const BOARDS_QUERY = gql`
     }
 }
 `
-const BoardList = () => {
+const BoardList = (props) => {
 
     const { loading, error, data } = useQuery(BOARDS_QUERY);
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error</p>;
 
     const list = data.boards.map(
-        board => <Board key={board.id} info={board} />
+        board => <Board key={board._id} info={board} />
     );
 
     const style = {
         textAlign: "center"
     }
-    
 
+    
     return (
         <div className="m-3 p-5">
             <div>
                 <h1 style={style}>게시글 CRUD</h1>
+                <Form inline>
+                    <Form.Control as="select" custom>
+                        <option>제목</option>
+                        <option>작성자</option>
+                        <option>내용</option>
+                    </Form.Control>
+                    <Form.Control type="text" placeholder="검색" className="">
+                        <Button variant="outline-success">검색</Button>
+                    </Form.Control>
+                </Form>
             </div>
             <div>
                 <Table striped bordered hover>
@@ -67,16 +77,16 @@ const BoardList = () => {
 
 
 const Board = (props) => {
-    const {id, title, author, createdAt, updatedAt} = props.info;
+    const {_id, title, author, createdAt, updatedAt} = props.info;
     const history = useHistory();
 
     const handleClick = () => {
-        history.push(`/board/${id}`);
+        history.push(`/board/${_id}`);
     }
 
     return (
         <tr onClick={handleClick}>
-            <td>{id + 1}</td>
+            <td>{_id + 1}</td>
             <td>{title}</td>
             <td>{author}</td>
             <td>{createdAt}</td>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import qs from 'qs';
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
@@ -33,7 +33,7 @@ const BOARD_DELETE = gql`
     }
 `
 
-const UpdateBoard = ({ match, location, history }) => {
+const UpdateBoard = (props, { match, location, history }) => {
     const { userid } = match.params;
     const [updateBoard] = useMutation(BOARD_UPDATE);
     const [deleteBoard] = useMutation(BOARD_DELETE);
@@ -41,6 +41,7 @@ const UpdateBoard = ({ match, location, history }) => {
     const [state, setState] = useState({
     });
 
+    
     const HandleChange = (e) => {
         setState({
             ...state,
@@ -61,21 +62,24 @@ const UpdateBoard = ({ match, location, history }) => {
     }
 
     const { loading, error, data } = useQuery(BOARD_QUERY, {variables: {id: parseInt(userid)}});
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p>Error</p>;
-
     const userData = data.board;
+    useEffect(()=>{
+        history.push('/');
+    },userData.updatedAt)
 
+    if (loading) return <p>Loading...</p>;
+    if (error) return <p>Error</p>;    
+    
     return (
         <div className="m-3 p-5">
             <Form>
                 <Form.Row>
-                    <Col sm={8}><Form.Group as={Col} controlId="formGridPassword">
+                    <Col sm={8}><Form.Group as={Col} controlId="formGridTitle">
                         <Form.Label>제목</Form.Label>
                         <Form.Control name="title" type="text" defaultValue = {userData.title} placeholder="제목" onChange={HandleChange}/>
                     </Form.Group>
                     </Col>
-                    <Col sm={4}><Form.Group as={Col} controlId="formGridEmail">
+                    <Col sm={4}><Form.Group as={Col} controlId="formGridAuthor">
                         <Form.Label>작성자</Form.Label>
                         <Form.Control readOnly name="author" defaultValue={userData.author} type="text" placeholder="이름" onChange={HandleChange} />
                     </Form.Group>
@@ -83,9 +87,9 @@ const UpdateBoard = ({ match, location, history }) => {
                 </Form.Row>
 
                 <Col>
-                    <Form.Group controlId="ControlTextarea1">
+                    <Form.Group controlId="ControlContent">
                         <Form.Label>내용</Form.Label>
-                        <Form.Control as="textarea" rows={5} defaultValue={userData.content} name="content" onChange={HandleChange}/>
+                        <Form.Control as="textarea" rows={5} name="content" defaultValue={userData.content} onChange={HandleChange}/>
                     </Form.Group>
                 </Col>
 
