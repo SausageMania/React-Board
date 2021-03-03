@@ -1,22 +1,13 @@
 import React, { useState } from 'react';
 import { Form, Col, Button } from 'react-bootstrap';
 import { useMutation } from '@apollo/react-hooks';
-import gql from 'graphql-tag';
 import { withRouter } from 'react-router-dom';
+import {BOARD_CREATE} from '../gql/mutation'
 
-const BOARD_MUTATION = gql`
-    mutation addBoard($title: String!, $author: String!, $content: String!){
-        addBoard(title: $title, author: $author, content: $content){
-            title
-            author
-            content
-        }
-    }
-`
 
 const CreateBoard = ({history}) => {
 
-    const [addBoard] = useMutation(BOARD_MUTATION);
+    const [addBoard] = useMutation(BOARD_CREATE);
     const [state, setState] = useState({
         title: '',
         author: '',

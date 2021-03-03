@@ -1,57 +1,44 @@
 import React, { useState } from 'react';
-import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import { Form, Col, Button } from 'react-bootstrap';
-
-
-const BOARD_QUERY = gql`
-query($_id: String!){
-    getBoard(_id: $_id){
-        title
-        content
-        author
-    }
-}
-`
-
-const BOARD_UPDATE = gql`
-    mutation updateBoard($_id: String!, $title: String, $content: String){
-        updateBoard(_id: $_id, title: $title, content: $content){
-            _id
-            title
-            content
-        }
-    }
-`
-
-const BOARD_DELETE = gql`
-    mutation deleteBoard($_id:String){
-        deleteBoard(_id:$_id){
-            _id
-        }
-    }
-`
+import { BOARD_QUERY, BOARD_DELETE, BOARD_UPDATE, ADD_LIKE, ADD_DISLIKE } from '../gql/mutation'
+import { HandThumbsUpFill, HandThumbsDownFill } from 'react-bootstrap-icons';
 
 const UpdateBoard = ({ match, location, history }) => {
     const { userid } = match.params;
-    const [updateBoard] = useMutation(BOARD_UPDATE,{
-        onCompleted(){
+    const [updateBoard] = useMutation(BOARD_UPDATE, {
+        onCompleted() {
             window.location.href = '/';
             //history.push('/');
         }
     });
-    const [deleteBoard] = useMutation(BOARD_DELETE,{
-        onCompleted(){
+    const [deleteBoard] = useMutation(BOARD_DELETE, {
+        onCompleted() {
             window.location.href = '/';
             //history.push('/');
         }
     });
+    const [addLike] = useMutation(ADD_LIKE, {
+        onCompleted() {
+            alert("좋아요를 누르셨습니다.");
+            refetch({id:userid});
+        }
+    });
+    const [addDislike] = useMutation(ADD_DISLIKE, {
+        onCompleted() {
+            alert("싫어요를 누르셨습니다.");
+            refetch({id:userid});
+        }
+    });
+
 
     const [state, setState] = useState({
+        likeClick: false,
+        dislikeClick: false
     });
 
-    const { loading, error, data } = useQuery(BOARD_QUERY, {variables: {_id: userid} });
-   
+    const { loading, error, data, refetch } = useQuery(BOARD_QUERY, { variables: { _id: userid } });
+
     const HandleChange = (e) => {
         setState({
             ...state,
@@ -67,22 +54,50 @@ const UpdateBoard = ({ match, location, history }) => {
 
     const DeleteClick = (e) => {
         e.preventDefault();
-        deleteBoard({variables: {_id:userid} });
+        deleteBoard({ variables: { _id: userid } });
         //history.push('/'); //해당 코드에서 문제가 발생한 것으로 보임. 해결하기 위해선 useEffect를 써야할지도,,
+    }
+
+    const LikeClick = (e) => {
+        if(!state.likeClick){
+            e.preventDefault();
+            setState({
+                ...state,
+                likeClick: true,
+            });
+            addLike({ variables: { _id: userid } });
+            
+        }
+    }
+
+    const DislikeClick = (e) => {
+        if (!state.dislikeClick) {
+            e.preventDefault();
+            setState({
+                ...state,
+                dislikeClick: true
+            });
+            if(userData.like > 0)
+                addDislike({ variables: { _id: userid } });
+            refetch();
+
+        }
+
     }
 
 
     if (loading) return <p>Loading...</p>;
-    if (error) return <p>Error</p>;    
-    
+    if (error) return <p>Error</p>;
+
     const userData = data.getBoard;
+
     return (
         <div className="m-3 p-5">
             <Form>
                 <Form.Row>
                     <Col sm={8}><Form.Group as={Col} controlId="formGridTitle">
                         <Form.Label>제목</Form.Label>
-                        <Form.Control name="title" type="text" defaultValue = {userData.title} placeholder="제목" onChange={HandleChange}/>
+                        <Form.Control name="title" type="text" defaultValue={userData.title} placeholder="제목" onChange={HandleChange} />
                     </Form.Group>
                     </Col>
                     <Col sm={4}><Form.Group as={Col} controlId="formGridAuthor">
@@ -95,13 +110,34 @@ const UpdateBoard = ({ match, location, history }) => {
                 <Col>
                     <Form.Group controlId="ControlContent">
                         <Form.Label>내용</Form.Label>
-                        <Form.Control as="textarea" rows={5} name="content" defaultValue={userData.content} onChange={HandleChange}/>
+                        <Form.Control as="textarea" rows={5} name="content" defaultValue={userData.content} onChange={HandleChange} />
                     </Form.Group>
                 </Col>
 
                 <Col>
-                    <Button className="mr-1" variant="primary" onClick={UpdateClick}>수정</Button>
-                    <Button className="mr-1" variant="danger" onClick={DeleteClick}>삭제</Button>
+                <div style={{display:"flex", justifyContent:"space-between"}}>
+                        <div>
+                            <Button className="mr-1" variant="primary" onClick={UpdateClick}>수정</Button>
+                            <Button className="mr-1" variant="danger" onClick={DeleteClick}>삭제</Button>
+                        </div>
+
+                        <div>
+                            <div style={{justifyContent:"flex-end"}}>{userData.like} 개의 Like</div>
+                            
+                            <Button className="mr-1"  variant="outline-success"
+                                onClick={LikeClick} active={state.likeClick} disabled={state.dislikeClick}>
+                                    <HandThumbsUpFill />
+                                    &nbsp;&nbsp;Like
+                            </Button>
+                            <Button className="mr-1" variant="outline-danger"
+                                onClick={DislikeClick} active={state.dislikeClick} disabled={state.likeClick}>
+                                <HandThumbsDownFill />
+                                &nbsp;&nbsp;Dislike
+                            </Button>
+                        </div>
+                    </div>
+
+                    
                 </Col>
             </Form>
         </div>

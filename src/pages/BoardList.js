@@ -1,84 +1,41 @@
 import React, { useState } from 'react';
-import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
-import { Table, Button, Form, Pagination } from 'react-bootstrap';
+import { Table, Button, Form, Pagination, Badge } from 'react-bootstrap';
 import { Route, Link, useHistory } from 'react-router-dom';
 import CreateBoard from './CreateBoard';
 import qs from 'qs';
+import {BOARDS_QUERY, SEARCH_QUERY, TOTAL_COUNT, SEARCH_COUNT} from '../gql/query'
 
-const BOARDS_QUERY = gql`
-query($sort:sortingTypes,$page:Int){
-    getBoards(sort:$sort, page: $page, limit:5){
-        _id
-        title
-        content
-        author
-        createdAt
-        updatedAt
-        seq
-        like
-    }
-}
-`
-const SEARCH_QUERY = gql`
-query($title:String, $author:String, $content:String){
-    searchBoards(title:$title, author:$author, content:$content){
-        _id
-        title
-        content
-        author
-        createdAt
-        updatedAt
-        seq
-        like
-    }
-}
-`
-
-const TOTAL_COUNT = gql`
-{
-    getBoardsCount{
-        count
-    }
-}
-`
-
-const SEARCH_COUNT = gql`
-query($title:String, $author:String, $content:String){
-    getSearchCount(title:$title, author:$author, content:$content){
-        count
-    }
-}
-`
 
 const BoardList = ({ location, history }) => {
     const [state, setState] = useState({
         select: 'title',
         search: '',
         active: 1,
-        sort: 'recent'
+        sort: 'recent',
+        limit: 5,
+        currPage : 1
     });
 
     //검색버튼을 누르면 parameter로 'select'와 'search'를 넘겨줌.
     const params = qs.parse(location.search, { ignoreQueryPrefix: true });
     const doSearch = (params.search !== '' && params.search != null) ? true : false;
 
-    const totalQuery = useQuery(BOARDS_QUERY, { skip: doSearch });  //검색을 하지 않을 때
-    const searchQuery = useQuery(SEARCH_QUERY, { variables: { [params.select]: params.search }, skip: !doSearch });    //검색을 할 때
-    const totalCount = useQuery(TOTAL_COUNT, {skip:doSearch});
-    const searchCount = useQuery(SEARCH_COUNT, {variables: { [params.select]: params.search }, skip:!doSearch});
+    const totalQuery = useQuery(BOARDS_QUERY, { skip: doSearch });  //검색을 하지 않을 때의 모든 게시글
+    const searchQuery = useQuery(SEARCH_QUERY, { variables: { [params.select]: params.search }, skip: !doSearch });    //검색필터링된 게시글
+    const totalCount = useQuery(TOTAL_COUNT, {skip:doSearch}); //검색을 하지 않을 떄의 게시글 갯수
+    const searchCount = useQuery(SEARCH_COUNT, {variables: { [params.select]: params.search }, skip:!doSearch}); //검색필터링 된 게시글 갯수
     
     
     //const [searchClick, {data, loading}] = useLazyQuery(SEARCH_QUERY, {variables:{[state.select]:state.search} });
 
-    const loading = doSearch ? searchQuery.loading : totalQuery.loading;
-    const error = doSearch ? searchQuery.error : totalQuery.error;
+    const {loading, error} = doSearch ? searchQuery : totalQuery; 
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error</p>;
 
-    const SortClick = (e) => {  //정렬을 위해 테이블을 클릭할 경우
-        const sortValue = e.target.name;
+    const SortClick = (e) => {  //정렬 을 위해 테이블을 클릭할 경우
+        const sortValue = e.target.id;
         setState({
             ...state,
             sort: sortValue
@@ -90,6 +47,7 @@ const BoardList = ({ location, history }) => {
     }
 
     const HandleChange = (e) => { //검색란에 값을 칠 경우
+        console.log(e.target.name);
         setState({
             ...state,
             [e.target.name]: e.target.value
@@ -107,8 +65,8 @@ const BoardList = ({ location, history }) => {
         (board, index) => <Board key={board._id} seq={index} info={board} />
     );
 
-    const PageInto = (e) => {
-        const page = parseInt(e.target.name);
+    const PageInto = (number) => {
+        const page = number;
         setState({
             ...state,
             active: page
@@ -121,30 +79,29 @@ const BoardList = ({ location, history }) => {
     }
 
 
-    const Pages = (e) => {
+    const Pages = () => {
+        const {limit} = state
         const {loading:pageLoading, error:pageError, data:pageData} = doSearch ? searchCount : totalCount;
 
         if(pageLoading) return <p>loading...</p>
         if(pageError) return <p>error</p>
 
         const dataCount = doSearch ? pageData.getSearchCount.count : pageData.getBoardsCount.count;
-        const pageNum = (dataCount % 5 === 0) ? (dataCount / 5) : dataCount / 5 + 1;
+        const pageNum = (dataCount % limit === 0) ? parseInt(dataCount / limit) : parseInt(dataCount / limit) + 1;
         let items = [];
-
+        
         for (let number = 1; number <= pageNum; number++) {
             items.push(
-                <Pagination.Item key={number} name={number} active={number === parseInt(state.active)} onClick={PageInto}>
+                <Pagination.Item key={number} name={number} active={number === parseInt(state.active)} onClick={() => PageInto(number)}>
                     {number}
                 </Pagination.Item>
             )
         }
         return (
             <Pagination>
-                <Pagination.First name={1} onClick={PageInto} />
-                <Pagination.Prev />
+                <Pagination.First onClick={() => PageInto(1)} />
                 {items}
-                <Pagination.Next />
-                <Pagination.Last name={pageNum} onClick={PageInto}/>
+                <Pagination.Last onClick={() => PageInto(pageNum)}/>
             </Pagination>
         );
         
@@ -169,12 +126,12 @@ const BoardList = ({ location, history }) => {
                 <Table striped bordered hover>
                     <thead>
                         <tr>
-                            <th onClick={SortClick} name="seq" >No.</th>
+                            <th onClick={SortClick} id="seq" >No.</th>
                             <th>제목</th>
                             <th>작성자</th>
-                            <th onClick={SortClick} name="recent" >생성날짜</th>
+                            <th onClick={SortClick} id="recent" >생성날짜</th>
                             <th>수정날짜</th>
-                            <th onClick={SortClick} name="like" >Like</th>
+                            <th onClick={SortClick} id="like" >Like</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -183,9 +140,9 @@ const BoardList = ({ location, history }) => {
                 </Table>
             </div>
 
-            <div style={{ display: "inline" }}>
-                <div className="d-flex"><Pages /></div>
-                <div style={{ textAlign: "right" }}>
+            <div >
+                <div style={{ display: "flex", justifyContent:"center" }}><Pages /></div>
+                <div style={{ float: "right" }}>
                     <Link to="/create">
                         <Button variant="info">게시글 생성</Button>
                     </Link>
@@ -199,18 +156,41 @@ const BoardList = ({ location, history }) => {
 
 
 const Board = (props) => {
-    const { _id, title, author, createdAt, updatedAt, like, seq } = props.info;
+    const { _id, title, author, createdAt, updatedAt, like, seq, label } = props.info;
+    const labelList = label.map((data, index) =>{
+        switch(data){
+            case "help_wanted":
+                 return <Badge key={index} variant="primary" className="mr-1">help wanted</Badge>
+            case "bug":
+                 return <Badge key={index} variant="danger" className="mr-1">bug</Badge>
+            case "documentation":
+                 return <Badge key={index} variant="secondary" className="mr-1">documentation</Badge>
+            case "enhancement":
+                 return <Badge key={index} variant="success" className="mr-1">enhancement</Badge>
+            case "duplicate":
+                 return <Badge key={index} variant="warning" className="mr-1">duplicated</Badge>
+            case "question":
+                 return <Badge key={index} variant="dark" className="mr-1">question</Badge>
+            case "good_first_issue":
+                 return <Badge key={index} variant="light" className="mr-1">good first issue</Badge>
+            default:
+                return <p>nothing..</p>
+            }
+    });
+
 
     const history = useHistory();
 
     const handleClick = () => {
         history.push(`/board/${_id}`);
     }
-
     return (
         <tr onClick={handleClick}>
             <td>{seq}</td>
-            <td>{title}</td>
+            <td>{title}
+                <p></p>
+                {labelList}
+            </td>
             <td>{author}</td>
             <td>{createdAt}</td>
             <td>{updatedAt}</td>
@@ -218,9 +198,6 @@ const Board = (props) => {
         </tr>
     );
 }
-
-
-
 
 
 export default BoardList;
