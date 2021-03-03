@@ -34,8 +34,18 @@ const BOARD_DELETE = gql`
 
 const UpdateBoard = ({ match, location, history }) => {
     const { userid } = match.params;
-    const [updateBoard] = useMutation(BOARD_UPDATE);
-    const [deleteBoard] = useMutation(BOARD_DELETE);
+    const [updateBoard] = useMutation(BOARD_UPDATE,{
+        onCompleted(){
+            window.location.href = '/';
+            //history.push('/');
+        }
+    });
+    const [deleteBoard] = useMutation(BOARD_DELETE,{
+        onCompleted(){
+            window.location.href = '/';
+            //history.push('/');
+        }
+    });
 
     const [state, setState] = useState({
     });
@@ -52,13 +62,13 @@ const UpdateBoard = ({ match, location, history }) => {
     const UpdateClick = (e) => {
         e.preventDefault();
         updateBoard({ variables: { _id: userid, title: state.title, content: state.content } });
-        history.push('/'); //해당 코드에서 문제가 발생한 것으로 보임. 해결하기 위해선 useEffect를 써야할지도,,
+        //history.push('/'); //해당 코드에서 문제가 발생한 것으로 보임. 해결하기 위해선 useEffect를 써야할지도,,
     }
 
     const DeleteClick = (e) => {
         e.preventDefault();
         deleteBoard({variables: {_id:userid} });
-        history.push('/'); //해당 코드에서 문제가 발생한 것으로 보임. 해결하기 위해선 useEffect를 써야할지도,,
+        //history.push('/'); //해당 코드에서 문제가 발생한 것으로 보임. 해결하기 위해선 useEffect를 써야할지도,,
     }
 
 
