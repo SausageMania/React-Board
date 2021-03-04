@@ -15,8 +15,17 @@
   > 
 
 ## 현재 문제점
-  > graphql에 데이터가 반영되기 전에 [홈페이지로 돌아가](https://github.com/SausageMania/React-Board/blob/main/src/pages/UpdateBoard.js#L54) lifeCycle이 정상적으로 작동하지 않음.
+  > [해결]~~graphql에 데이터가 반영되기 전에 [홈페이지로 돌아가](https://github.com/SausageMania/React-Board/blob/main/src/pages/UpdateBoard.js#L54) lifeCycle이 정상적으로 작동하지 않음.~~
 
 ## 앞으로 남은 과제
-  > pagination으로 게시글 나누기  
-  > 검색 기능으로 query 분류하여 웹에 띄우기
+  > [완료]~~pagination으로 게시글 나누기~~  
+  > [완료]~~검색 기능으로 query 분류하여 웹에 띄우기~~  
+  > [완료]~~day.js를 이용하여 날짜 형식 구체화~~
+  
+## 현재 게시판 UI
+게시판 홈페이지 ![image](https://user-images.githubusercontent.com/46717432/109938149-0bc14c00-7d13-11eb-9d96-5bf095ddd824.png){: width="60%" height="60%"}  
+게시글 수정 ![image](https://user-images.githubusercontent.com/46717432/109938265-2b587480-7d13-11eb-9923-aeccc8bfa02e.png){: width="60%" height="60%"}  
+
+게시글 생성 ![image](https://user-images.githubusercontent.com/46717432/109938100-fea45d00-7d12-11eb-9255-f86c6eb53733.png){: width="60%" height="60%"}  
+
+
