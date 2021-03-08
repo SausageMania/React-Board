@@ -57,20 +57,6 @@ const BoardList = ({ location, history }) => {
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error</p>;
 
-    const realData = doSearch ? data.searchBoards : data.getBoards;
-    const list = realData.map((board, index) => <Board key={board._id} seq={index} info={board} />);
-
-    const SortClick = e => {
-        //정렬 을 위해 테이블을 클릭할 경우
-        const sortValue = e.target.id;
-        setState({
-            ...state,
-            sort: sortValue,
-        });
-        if (doSearch) searchQuery.refetch({ sort: sortValue, page: active });
-        else totalQuery.refetch({ sort: sortValue, page: active });
-    };
-
     const HandleChange = e => {
         //검색란에 값을 칠 경우
         console.log(e.target.name);
@@ -134,20 +120,20 @@ const BoardList = ({ location, history }) => {
             <div>
                 <h1 style={{ textAlign: 'center' }}>CRUD 게시판</h1>
                 <Form style={{ float: 'right' }} inline>
-                    {/*
-                    <Form.Control
-                        name="select"
-                        onChange={HandleChange}
-                        as="select"
-                        custom
-                        className="mr-1"
-                        defaultValue={params.select}
-                    >
-                        <option value="title">제목</option>
-                        <option value="author">작성자</option>
-                        <option value="content">내용</option>
-                    </Form.Control>
-                    */}
+                    {
+                        <Form.Control
+                            name="select"
+                            onChange={HandleChange}
+                            as="select"
+                            custom
+                            className="mr-1"
+                            defaultValue={params.select}
+                        >
+                            <option value="title">제목</option>
+                            <option value="author">작성자</option>
+                            <option value="content">내용</option>
+                        </Form.Control>
+                    }
                     <Form.Control
                         type="text"
                         name="search"
@@ -161,28 +147,7 @@ const BoardList = ({ location, history }) => {
                     </Button>
                 </Form>
             </div>
-            <div>
-                <Table striped bordered hover>
-                    <thead>
-                        <tr>
-                            <th onClick={SortClick} id="seq">
-                                <CaretDownFill />
-                                No.
-                            </th>
-                            <th>제목</th>
-                            <th>작성자</th>
-                            <th onClick={SortClick} id="recent">
-                                생성날짜
-                            </th>
-                            <th>수정날짜</th>
-                            <th onClick={SortClick} id="like">
-                                Like
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>{list}</tbody>
-                </Table>
-            </div>
+            <ShowList info={(active, params, doSearch)} />
 
             <div>
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -195,6 +160,86 @@ const BoardList = ({ location, history }) => {
                 </div>
             </div>
             <Route path="/create" component={CreateBoard} />
+        </div>
+    );
+};
+
+const ShowList = props => {
+    const { active, params, doSearch } = props.info;
+    const [state, setState] = useState({
+        select: 'title',
+        search: '',
+        sort: 'recent',
+        limit: 5,
+        currPage: 1,
+    });
+
+    //검색버튼을 누르면 parameter로 'select'와 'search'를 넘겨줌.
+
+    const totalQuery = useQuery(BOARDS_QUERY, { skip: doSearch }); //검색을 하지 않을 때의 모든 게시글
+    const searchQuery = useQuery(SEARCH_QUERY, {
+        variables: { [params.select]: params.search },
+        skip: !doSearch,
+    }); //검색필터링된 게시글
+
+    //const [searchClick, {data, loading}] = useLazyQuery(SEARCH_QUERY, {variables:{[state.select]:state.search} });
+
+    const { loading, error, data, refetch } = doSearch ? searchQuery : totalQuery;
+
+    useEffect(() => {
+        if (data != null) {
+            refetch();
+        }
+        return () => {
+            setState({
+                select: 'title',
+                search: '',
+                sort: 'recent',
+                limit: 5,
+                currPage: 1,
+            });
+        };
+    }, [data, refetch]);
+
+    if (loading) return <p>Loading...</p>;
+    if (error) return <p>Error</p>;
+
+    const realData = doSearch ? data.searchBoards : data.getBoards;
+    const list = realData.map((board, index) => <Board key={board._id} seq={index} info={board} />);
+
+    const SortClick = e => {
+        //정렬 을 위해 테이블을 클릭할 경우
+        const sortValue = e.target.id;
+        setState({
+            ...state,
+            sort: sortValue,
+        });
+        if (doSearch) searchQuery.refetch({ sort: sortValue, page: active });
+        else totalQuery.refetch({ sort: sortValue, page: active });
+    };
+
+    return (
+        <div>
+            <Table striped bordered hover>
+                <thead>
+                    <tr>
+                        <th onClick={SortClick} id="seq">
+                            <CaretDownFill />
+                            No.
+                        </th>
+                        <th>제목</th>
+                        <th>작성자</th>
+                        <th onClick={SortClick} id="recent">
+                            생성날짜
+                        </th>
+                        <th>수정날짜</th>
+                        <th onClick={SortClick} id="like">
+                            Like
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>{list}</tbody>
+            </Table>
         </div>
     );
 };
