@@ -134,6 +134,7 @@ const BoardList = ({ location, history }) => {
             <div>
                 <h1 style={{ textAlign: 'center' }}>CRUD 게시판</h1>
                 <Form style={{ float: 'right' }} inline>
+                    {/*
                     <Form.Control
                         name="select"
                         onChange={HandleChange}
@@ -146,6 +147,7 @@ const BoardList = ({ location, history }) => {
                         <option value="author">작성자</option>
                         <option value="content">내용</option>
                     </Form.Control>
+                    */}
                     <Form.Control
                         type="text"
                         name="search"

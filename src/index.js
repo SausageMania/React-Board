@@ -7,7 +7,7 @@ import { ApolloProvider } from '@apollo/react-hooks';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const client = new ApolloClient({
-    uri: 'http://172.31.99.49:4000',
+    uri: 'http://172.31.99.48:4000',
 });
 
 ReactDOM.render(
