@@ -147,7 +147,7 @@ const BoardList = ({ location, history }) => {
                     </Button>
                 </Form>
             </div>
-            <ShowList info={(active, params, doSearch)} />
+            <ShowList info={{ active, params, doSearch }} />
 
             <div>
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -166,6 +166,7 @@ const BoardList = ({ location, history }) => {
 
 const ShowList = props => {
     const { active, params, doSearch } = props.info;
+    console.log(props.info);
     const [state, setState] = useState({
         select: 'title',
         search: '',
