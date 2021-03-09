@@ -8,7 +8,7 @@ import * as dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 //import { CaretDownFill } from 'react-bootstrap-icons';
 
-const BoardList = ({ location, history }) => {
+const BoardList = () => {
     const [state, setState] = useState({
         title: '',
         author: '',
@@ -24,13 +24,12 @@ const BoardList = ({ location, history }) => {
 
     const [search, setSearch] = useState({
         state,
-        active,
         select,
     });
 
     const searchCount = useQuery(SEARCH_COUNT, {
         variables: {
-            title: search.select.title ? search.state.title : '',
+            title: search.select.title ? search.state.title : null,
             author: search.select.author ? search.state.author : null,
             content: search.select.content ? search.state.content : null,
             isMatched: search.select.match,
@@ -72,11 +71,10 @@ const BoardList = ({ location, history }) => {
         const limit = 5;
         const { loading: pageLoading, error: pageError, data: pageData } = searchCount;
 
-        if (pageLoading) return <p>loading...</p>;
-        if (pageError) return <p>error</p>;
+        if (pageLoading) return <p>Pagination loading...</p>;
+        if (pageError) return <p>Pagination error</p>;
 
         const dataCount = pageData.getSearchCount.count;
-        console.log(dataCount);
         const pageNum =
             dataCount % limit === 0 ? parseInt(dataCount / limit) : parseInt(dataCount / limit) + 1;
         let items = [];
@@ -180,7 +178,7 @@ const BoardList = ({ location, history }) => {
                     </Button>
                 </Form>
             </div>
-            <ShowList info={search} />
+            <ShowList info={{ active, search }} />
 
             <div>
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -198,24 +196,24 @@ const BoardList = ({ location, history }) => {
 };
 
 const ShowList = props => {
-    const search = props.info;
+    const { active, search } = props.info;
     const [sort, setState] = useState('recent');
 
     const searchQuery = useQuery(SEARCH_QUERY, {
         variables: {
-            title: search.select.title ? search.state.title : '',
+            title: search.select.title ? search.state.title : null,
             author: search.select.author ? search.state.author : null,
             content: search.select.content ? search.state.content : null,
             isMatched: search.select.match,
-            page: search.active,
+            page: active,
             sort: sort,
         },
     }); //검색필터링된 게시글(검색하지 않을 시 전체 데이터)
 
     const { loading, error, data } = searchQuery;
 
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p>Error</p>;
+    if (loading) return <p>Board loading...</p>;
+    if (error) return <p>Board error</p>;
 
     const realData = data.searchBoards;
     const list = realData.map((board, index) => <Board key={board._id} seq={index} info={board} />);
@@ -303,6 +301,8 @@ const Board = props => {
     const history = useHistory();
 
     const handleClick = () => {
+        // window.location.href('/');
+        // window.location.href(`/board/${_id}`);
         history.push(`/board/${_id}`);
     };
     return (

@@ -28,8 +28,8 @@ const UpdateBoard = ({ match, location, history }) => {
             },
         ],
         onCompleted() {
-            //window.location.href = '/';
             console.log('onCompleted');
+            //window.location.href = '/';
             history.push('/');
         },
     });
@@ -43,8 +43,8 @@ const UpdateBoard = ({ match, location, history }) => {
             },
         ],
         onCompleted() {
-            //window.location.href = '/';
-            history.push('/');
+            //history.push('/');
+            window.location.href = '/';
         },
     });
     const [addLike] = useMutation(ADD_LIKE, {
@@ -81,7 +81,6 @@ const UpdateBoard = ({ match, location, history }) => {
 
     const { loading, error, data, refetch } = useQuery(BOARD_QUERY, {
         variables: { _id: userid },
-        onCompleted() {},
     });
 
     const HandleChange = e => {
@@ -141,7 +140,7 @@ const UpdateBoard = ({ match, location, history }) => {
             ...state,
             label: labelList,
         });
-        console.log(labelList);
+        // console.log(labelList);
     };
 
     if (loading) return <p>Loading...</p>;
@@ -272,7 +271,8 @@ const UpdateBoard = ({ match, location, history }) => {
                                     variant="info"
                                     onClick={() => {
                                         refetch({ _id: userid });
-                                        history.push('/');
+                                        window.location.href('/');
+                                        //history.push('/');
                                     }}
                                 >
                                     홈으로
