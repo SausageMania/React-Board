@@ -1,95 +1,82 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@apollo/react-hooks';
-import { Table, Button, Form, Pagination, Badge } from 'react-bootstrap';
+import { Table, Button, Form, Pagination, Badge, InputGroup } from 'react-bootstrap';
 import { Route, Link, useHistory } from 'react-router-dom';
 import CreateBoard from './CreateBoard';
-import qs from 'qs';
-import { BOARDS_QUERY, SEARCH_QUERY, TOTAL_COUNT, SEARCH_COUNT } from '../gql/query';
+import { SEARCH_QUERY, SEARCH_COUNT } from '../gql/query';
 import * as dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { CaretDownFill } from 'react-bootstrap-icons';
+//import { CaretDownFill } from 'react-bootstrap-icons';
 
 const BoardList = ({ location, history }) => {
     const [state, setState] = useState({
-        select: 'title',
-        search: '',
-        sort: 'recent',
-        limit: 5,
-        currPage: 1,
+        title: '',
+        author: '',
+        content: '',
     });
     const [active, setActive] = useState(1);
+    const [select, setSelect] = useState({
+        title: false,
+        author: false,
+        content: false,
+        match: false,
+    });
 
-    //검색버튼을 누르면 parameter로 'select'와 'search'를 넘겨줌.
-    const params = qs.parse(location.search, { ignoreQueryPrefix: true });
-    const doSearch = params.search !== '' && params.search != null ? true : false;
+    const [search, setSearch] = useState({
+        state,
+        active,
+        select,
+    });
 
-    const totalQuery = useQuery(BOARDS_QUERY, { skip: doSearch }); //검색을 하지 않을 때의 모든 게시글
-    const searchQuery = useQuery(SEARCH_QUERY, {
-        variables: { [params.select]: params.search },
-        skip: !doSearch,
-    }); //검색필터링된 게시글
-
-    const totalCount = useQuery(TOTAL_COUNT, { skip: doSearch }); //검색을 하지 않을 떄의 게시글 갯수
     const searchCount = useQuery(SEARCH_COUNT, {
-        variables: { [params.select]: params.search },
-        skip: !doSearch,
-    }); //검색필터링 된 게시글 갯수
+        variables: {
+            title: search.select.title ? search.state.title : '',
+            author: search.select.author ? search.state.author : null,
+            content: search.select.content ? search.state.content : null,
+            isMatched: search.select.match,
+        },
+    }); //검색필터링 된 게시글 갯수(검색하지 않을 시 전체 갯수)
 
     //const [searchClick, {data, loading}] = useLazyQuery(SEARCH_QUERY, {variables:{[state.select]:state.search} });
 
-    const { loading, error, data, refetch } = doSearch ? searchQuery : totalQuery;
-
-    useEffect(() => {
-        if (data != null) {
-            refetch();
-        }
-        return () => {
-            setState({
-                select: 'title',
-                search: '',
-                sort: 'recent',
-                limit: 5,
-                currPage: 1,
-            });
-        };
-    }, [data, refetch]);
-
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p>Error</p>;
-
     const HandleChange = e => {
         //검색란에 값을 칠 경우
-        console.log(e.target.name);
         setState({
             ...state,
             [e.target.name]: e.target.value,
         });
     };
 
+    const SelectClick = e => {
+        setSelect({
+            ...select,
+            [e.target.name]: select[e.target.name] ? false : true,
+        });
+    };
+
     const SearchClick = () => {
+        setSearch({
+            state,
+            active,
+            select,
+        });
         //검색 버튼을 누를 경우
-        window.location.href = '?select=' + state.select + '&search=' + state.search;
-        //history.push('?select=' + state.select + '&search=' + state.search);
     };
 
     const PageInto = number => {
         const page = number;
         setActive(page);
-
-        if (doSearch) searchQuery.refetch({ page: page });
-        else totalQuery.refetch({ page: page });
     };
 
     const Pages = () => {
-        const { limit } = state;
-        const { loading: pageLoading, error: pageError, data: pageData } = doSearch
-            ? searchCount
-            : totalCount;
+        const limit = 5;
+        const { loading: pageLoading, error: pageError, data: pageData } = searchCount;
 
         if (pageLoading) return <p>loading...</p>;
         if (pageError) return <p>error</p>;
 
-        const dataCount = doSearch ? pageData.getSearchCount.count : pageData.getBoardsCount.count;
+        const dataCount = pageData.getSearchCount.count;
+        console.log(dataCount);
         const pageNum =
             dataCount % limit === 0 ? parseInt(dataCount / limit) : parseInt(dataCount / limit) + 1;
         let items = [];
@@ -119,35 +106,81 @@ const BoardList = ({ location, history }) => {
         <div className="m-3 p-5">
             <div>
                 <h1 style={{ textAlign: 'center' }}>CRUD 게시판</h1>
-                <Form style={{ float: 'right' }} inline>
-                    {
+                <br />
+                <Form
+                    className="mb-1"
+                    style={{ display: 'flex', justifyContent: 'space-between' }}
+                    inline
+                >
+                    <InputGroup className="mr-1" style={{ width: '28%' }}>
+                        <InputGroup.Prepend size="sm">
+                            <Button
+                                variant="outline-secondary"
+                                onClick={SelectClick}
+                                active={select.title}
+                                name="title"
+                            >
+                                제목
+                            </Button>
+                        </InputGroup.Prepend>
                         <Form.Control
-                            name="select"
+                            aria-describedby="basic-addon1"
+                            placeholder="제목을 입력하세요."
+                            defaultValue={state.select}
+                            name="title"
                             onChange={HandleChange}
-                            as="select"
-                            custom
-                            className="mr-1"
-                            defaultValue={params.select}
-                        >
-                            <option value="title">제목</option>
-                            <option value="author">작성자</option>
-                            <option value="content">내용</option>
-                        </Form.Control>
-                    }
-                    <Form.Control
-                        type="text"
-                        name="search"
-                        onChange={HandleChange}
-                        placeholder="검색"
-                        className="mr-1"
-                        defaultValue={params.search}
-                    />
+                        />
+                    </InputGroup>
+                    <InputGroup className="mr-1" style={{ width: '28%' }}>
+                        <InputGroup.Prepend>
+                            <Button
+                                variant="outline-secondary"
+                                onClick={SelectClick}
+                                active={select.author}
+                                name="author"
+                            >
+                                작성자
+                            </Button>
+                        </InputGroup.Prepend>
+                        <Form.Control
+                            aria-describedby="basic-addon1"
+                            placeholder="작성자를 입력하세요."
+                            name="author"
+                            onChange={HandleChange}
+                        />
+                    </InputGroup>
+                    <InputGroup className="mr-1" style={{ width: '28%' }}>
+                        <InputGroup.Prepend>
+                            <Button
+                                variant="outline-secondary"
+                                onClick={SelectClick}
+                                active={select.content}
+                                name="content"
+                            >
+                                내용
+                            </Button>
+                        </InputGroup.Prepend>
+                        <Form.Control
+                            aria-describedby="basic-addon1"
+                            placeholder="내용을 입력하세요."
+                            name="content"
+                            onChange={HandleChange}
+                        />
+                    </InputGroup>
+                    <Button
+                        variant="outline-danger"
+                        active={select.match}
+                        name="match"
+                        onClick={SelectClick}
+                    >
+                        매치
+                    </Button>
                     <Button variant="outline-success" onClick={SearchClick}>
                         검색
                     </Button>
                 </Form>
             </div>
-            <ShowList info={{ active, params, doSearch }} />
+            <ShowList info={search} />
 
             <div>
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -165,67 +198,38 @@ const BoardList = ({ location, history }) => {
 };
 
 const ShowList = props => {
-    const { active, params, doSearch } = props.info;
-    console.log(props.info);
-    const [state, setState] = useState({
-        select: 'title',
-        search: '',
-        sort: 'recent',
-        limit: 5,
-        currPage: 1,
-    });
+    const search = props.info;
+    const [sort, setState] = useState('recent');
 
-    //검색버튼을 누르면 parameter로 'select'와 'search'를 넘겨줌.
-
-    const totalQuery = useQuery(BOARDS_QUERY, { skip: doSearch }); //검색을 하지 않을 때의 모든 게시글
     const searchQuery = useQuery(SEARCH_QUERY, {
-        variables: { [params.select]: params.search },
-        skip: !doSearch,
-    }); //검색필터링된 게시글
+        variables: {
+            title: search.select.title ? search.state.title : '',
+            author: search.select.author ? search.state.author : null,
+            content: search.select.content ? search.state.content : null,
+            isMatched: search.select.match,
+            page: search.active,
+            sort: sort,
+        },
+    }); //검색필터링된 게시글(검색하지 않을 시 전체 데이터)
 
-    //const [searchClick, {data, loading}] = useLazyQuery(SEARCH_QUERY, {variables:{[state.select]:state.search} });
-
-    const { loading, error, data, refetch } = doSearch ? searchQuery : totalQuery;
-
-    useEffect(() => {
-        if (data != null) {
-            refetch();
-        }
-        return () => {
-            setState({
-                select: 'title',
-                search: '',
-                sort: 'recent',
-                limit: 5,
-                currPage: 1,
-            });
-        };
-    }, [data, refetch]);
+    const { loading, error, data } = searchQuery;
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error</p>;
 
-    const realData = doSearch ? data.searchBoards : data.getBoards;
+    const realData = data.searchBoards;
     const list = realData.map((board, index) => <Board key={board._id} seq={index} info={board} />);
-
     const SortClick = e => {
         //정렬 을 위해 테이블을 클릭할 경우
         const sortValue = e.target.id;
-        setState({
-            ...state,
-            sort: sortValue,
-        });
-        if (doSearch) searchQuery.refetch({ sort: sortValue, page: active });
-        else totalQuery.refetch({ sort: sortValue, page: active });
+        setState(sortValue);
     };
-
     return (
         <div>
             <Table striped bordered hover>
                 <thead>
                     <tr>
                         <th onClick={SortClick} id="seq">
-                            <CaretDownFill />
                             No.
                         </th>
                         <th>제목</th>

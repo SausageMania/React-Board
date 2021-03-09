@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import { Form, Col, Button } from 'react-bootstrap';
 import { BOARD_QUERY, BOARD_DELETE, BOARD_UPDATE, ADD_LIKE, ADD_DISLIKE } from '../gql/mutation';
@@ -19,43 +19,70 @@ const options = [
 const UpdateBoard = ({ match, location, history }) => {
     const { userid } = match.params;
     const [updateBoard] = useMutation(BOARD_UPDATE, {
+        refetchQueries: [
+            {
+                query: BOARD_QUERY,
+                variables: {
+                    _id: userid,
+                },
+            },
+        ],
         onCompleted() {
             //window.location.href = '/';
+            console.log('onCompleted');
             history.push('/');
         },
     });
     const [deleteBoard] = useMutation(BOARD_DELETE, {
+        refetchQueries: [
+            {
+                query: BOARD_QUERY,
+                variables: {
+                    _id: userid,
+                },
+            },
+        ],
         onCompleted() {
             //window.location.href = '/';
             history.push('/');
         },
     });
     const [addLike] = useMutation(ADD_LIKE, {
+        refetchQueries: [
+            {
+                query: BOARD_QUERY,
+                variables: {
+                    _id: userid,
+                },
+            },
+        ],
         onCompleted() {
             console.log('onCompleted');
-            refetch({ id: userid });
         },
     });
     const [addDislike] = useMutation(ADD_DISLIKE, {
+        refetchQueries: [
+            {
+                query: BOARD_QUERY,
+                variables: {
+                    _id: userid,
+                },
+            },
+        ],
         onCompleted() {
             console.log('onCompleted');
-            refetch({ id: userid });
         },
     });
 
     const [state, setState] = useState({
         likeClick: false,
         dislikeClick: false,
-        label: [],
     });
 
-    const { loading, error, data, refetch } = useQuery(BOARD_QUERY, { variables: { _id: userid } });
-
-    useEffect(() => {
-        if (data != null) {
-            return null;
-        }
-    }, [data]);
+    const { loading, error, data, refetch } = useQuery(BOARD_QUERY, {
+        variables: { _id: userid },
+        onCompleted() {},
+    });
 
     const HandleChange = e => {
         setState({
@@ -116,12 +143,6 @@ const UpdateBoard = ({ match, location, history }) => {
         });
         console.log(labelList);
     };
-
-    useEffect(() => {
-        console.log('useEffect');
-        refetch({ id: userid });
-        console.log('useEffect2');
-    }, [refetch, userid]);
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error</p>;
@@ -250,6 +271,7 @@ const UpdateBoard = ({ match, location, history }) => {
                                     className="mr-1"
                                     variant="info"
                                     onClick={() => {
+                                        refetch({ _id: userid });
                                         history.push('/');
                                     }}
                                 >

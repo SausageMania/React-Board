@@ -16,8 +16,22 @@ export const BOARDS_QUERY = gql`
     }
 `;
 export const SEARCH_QUERY = gql`
-    query($title: String, $author: String, $content: String) {
-        searchBoards(title: $title, author: $author, content: $content) {
+    query(
+        $title: String
+        $author: String
+        $content: String
+        $page: Int
+        $sort: sortingTypes
+        $isMatched: Boolean
+    ) {
+        searchBoards(
+            title: $title
+            author: $author
+            content: $content
+            page: $page
+            sort: $sort
+            isMatched: $isMatched
+        ) {
             _id
             title
             content
@@ -40,8 +54,8 @@ export const TOTAL_COUNT = gql`
 `;
 
 export const SEARCH_COUNT = gql`
-    query($title: String, $author: String, $content: String) {
-        getSearchCount(title: $title, author: $author, content: $content) {
+    query($title: String, $author: String, $content: String, $isMatched: Boolean) {
+        getSearchCount(title: $title, author: $author, content: $content, isMatched: $isMatched) {
             count
         }
     }
