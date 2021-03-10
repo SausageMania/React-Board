@@ -219,6 +219,9 @@ const ShowList = props => {
         if (data) {
             setRealData(data.searchBoards);
         }
+        return () => {
+            setRealData([]);
+        };
     }, [data]);
 
     if (loading) return <p>Board loading...</p>;
@@ -322,9 +325,9 @@ const Board = props => {
                 {labelList}
             </td>
             <td>{author}</td>
-            <td>{dayjs(createdAt).format('YYYY-MM-DD HH:mm')}</td>
+            <td>{dayjs(createdAt.split('Z')[0]).format('YYYY-MM-DD HH:mm')}</td>
             <td>
-                {dayjs(updatedAt).format('YYYY-MM-DD HH:mm')}
+                {dayjs(updatedAt.split('Z')[0]).format('YYYY-MM-DD HH:mm')}
                 <UpdateFromNow data={updatedAt} />
             </td>
             <td>{like}</td>

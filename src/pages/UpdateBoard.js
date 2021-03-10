@@ -45,6 +45,9 @@ const UpdateBoard = ({ match, location, history }) => {
                 likeCount: userData.like,
             });
         }
+        return () => {
+            setState({ title: '', content: '', label: [], likeCount: 0 });
+        };
     }, [data]);
 
     const [updateBoard] = useMutation(BOARD_UPDATE, {
@@ -167,12 +170,8 @@ const UpdateBoard = ({ match, location, history }) => {
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error</p>;
 
-    console.log(state.title);
-
     let defaultLabels = [];
     state.label.forEach(key => defaultLabels.push({ value: key, label: key.replace(' ', '_') }));
-
-    console.log(defaultLabels);
 
     return (
         <div className="m-3 p-5">
