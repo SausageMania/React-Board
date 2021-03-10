@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from '@apollo/react-hooks';
 import { Table, Button, Form, Pagination, Badge, InputGroup } from 'react-bootstrap';
 import { Route, Link, useHistory } from 'react-router-dom';
@@ -6,6 +6,8 @@ import CreateBoard from './CreateBoard';
 import { SEARCH_QUERY, SEARCH_COUNT } from '../gql/query';
 import * as dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { withRouter } from 'react-router-dom';
+
 //import { CaretDownFill } from 'react-bootstrap-icons';
 
 const BoardList = () => {
@@ -178,7 +180,7 @@ const BoardList = () => {
                     </Button>
                 </Form>
             </div>
-            <ShowList info={{ active, search }} />
+            {<ShowList info={{ active, search }} />}
 
             <div>
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -198,6 +200,7 @@ const BoardList = () => {
 const ShowList = props => {
     const { active, search } = props.info;
     const [sort, setState] = useState('recent');
+    const [realData, setRealData] = useState([]);
 
     const searchQuery = useQuery(SEARCH_QUERY, {
         variables: {
@@ -212,10 +215,15 @@ const ShowList = props => {
 
     const { loading, error, data } = searchQuery;
 
+    useEffect(() => {
+        if (data) {
+            setRealData(data.searchBoards);
+        }
+    }, [data]);
+
     if (loading) return <p>Board loading...</p>;
     if (error) return <p>Board error</p>;
 
-    const realData = data.searchBoards;
     const list = realData.map((board, index) => <Board key={board._id} seq={index} info={board} />);
     const SortClick = e => {
         //정렬 을 위해 테이블을 클릭할 경우
@@ -303,7 +311,7 @@ const Board = props => {
     const handleClick = () => {
         // window.location.href('/');
         // window.location.href(`/board/${_id}`);
-        history.push(`/board/${_id}`);
+        history.replace(`/board/${_id}`);
     };
     return (
         <tr onClick={handleClick}>
@@ -336,4 +344,4 @@ const UpdateFromNow = props => {
     );
 };
 
-export default BoardList;
+export default withRouter(BoardList);

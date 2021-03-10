@@ -20,8 +20,8 @@ const CreateBoard = ({ history }) => {
     const [addBoard] = useMutation(BOARD_CREATE, {
         onCompleted() {
             alert('게시글이 생성되었습니다.');
-            history.push('/');
-            //window.location.href = '/';
+            // history.push('/');
+            window.location.href = '/';
         },
     });
     const [state, setState] = useState({

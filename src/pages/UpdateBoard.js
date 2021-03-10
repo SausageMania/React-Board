@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import { Form, Col, Button } from 'react-bootstrap';
 import { BOARD_QUERY, BOARD_DELETE, BOARD_UPDATE, ADD_LIKE, ADD_DISLIKE } from '../gql/mutation';
 import { HandThumbsUpFill, HandThumbsDownFill } from 'react-bootstrap-icons';
 import Select from 'react-select';
+import { withRouter } from 'react-router-dom';
 
 const options = [
     { value: 'bug', label: 'bug' },
@@ -18,6 +19,34 @@ const options = [
 
 const UpdateBoard = ({ match, location, history }) => {
     const { userid } = match.params;
+    const [state, setState] = useState({
+        title: '',
+        content: '',
+        label: [],
+        likeCount: 0,
+    });
+
+    const [like, setLike] = useState({
+        likeClick: false,
+        dislikeClick: false,
+    });
+
+    const { loading, error, data } = useQuery(BOARD_QUERY, {
+        variables: { _id: userid },
+    });
+
+    useEffect(() => {
+        if (data) {
+            const userData = data.getBoard;
+            setState({
+                title: userData.title,
+                content: userData.content,
+                label: userData.label,
+                likeCount: userData.like,
+            });
+        }
+    }, [data]);
+
     const [updateBoard] = useMutation(BOARD_UPDATE, {
         refetchQueries: [
             {
@@ -29,7 +58,8 @@ const UpdateBoard = ({ match, location, history }) => {
         ],
         onCompleted() {
             console.log('onCompleted');
-            //window.location.href = '/';
+
+            // window.location.href = '/';
             history.push('/');
         },
     });
@@ -43,7 +73,7 @@ const UpdateBoard = ({ match, location, history }) => {
             },
         ],
         onCompleted() {
-            //history.push('/');
+            // history.push('/');
             window.location.href = '/';
         },
     });
@@ -74,15 +104,6 @@ const UpdateBoard = ({ match, location, history }) => {
         },
     });
 
-    const [state, setState] = useState({
-        likeClick: false,
-        dislikeClick: false,
-    });
-
-    const { loading, error, data, refetch } = useQuery(BOARD_QUERY, {
-        variables: { _id: userid },
-    });
-
     const HandleChange = e => {
         setState({
             ...state,
@@ -110,10 +131,10 @@ const UpdateBoard = ({ match, location, history }) => {
     };
 
     const LikeClick = e => {
-        if (!state.likeClick) {
+        if (!like.likeClick) {
             e.preventDefault();
-            setState({
-                ...state,
+            setLike({
+                ...like,
                 likeClick: true,
             });
             addLike({ variables: { _id: userid } });
@@ -122,13 +143,13 @@ const UpdateBoard = ({ match, location, history }) => {
     };
 
     const DislikeClick = e => {
-        if (!state.dislikeClick) {
+        if (!like.dislikeClick) {
             e.preventDefault();
-            setState({
-                ...state,
+            setLike({
+                ...like,
                 dislikeClick: true,
             });
-            if (userData.like > 0) addDislike({ variables: { _id: userid } });
+            if (state.likeCount > 0) addDislike({ variables: { _id: userid } });
             alert('싫어요를 누르셨습니다.');
         }
     };
@@ -146,9 +167,12 @@ const UpdateBoard = ({ match, location, history }) => {
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error</p>;
 
-    const userData = data.getBoard;
+    console.log(state.title);
+
     let defaultLabels = [];
-    userData.label.forEach(key => defaultLabels.push({ value: key, label: key.replace(' ', '_') }));
+    state.label.forEach(key => defaultLabels.push({ value: key, label: key.replace(' ', '_') }));
+
+    console.log(defaultLabels);
 
     return (
         <div className="m-3 p-5">
@@ -160,7 +184,7 @@ const UpdateBoard = ({ match, location, history }) => {
                             <Form.Control
                                 name="title"
                                 type="text"
-                                defaultValue={userData.title}
+                                defaultValue={state.title}
                                 placeholder="제목"
                                 onChange={HandleChange}
                             />
@@ -172,7 +196,7 @@ const UpdateBoard = ({ match, location, history }) => {
                             <Form.Control
                                 readOnly
                                 name="author"
-                                defaultValue={userData.author}
+                                defaultValue={state.author}
                                 type="text"
                                 placeholder="이름"
                                 onChange={HandleChange}
@@ -185,7 +209,7 @@ const UpdateBoard = ({ match, location, history }) => {
                         <Form.Group as={Col} controlId="exampleForm.ControlTextarea1">
                             <Form.Label>Label</Form.Label>
                             <Select
-                                defaultValue={defaultLabels}
+                                value={defaultLabels}
                                 onChange={value => LabelChange(value)}
                                 closeMenuOnSelect={false}
                                 isMulti={true}
@@ -212,15 +236,15 @@ const UpdateBoard = ({ match, location, history }) => {
                     <Col sm={4}>
                         <Form.Group as={Col}>
                             <Form.Label style={{ display: 'flex', justifyContent: 'right' }}>
-                                {userData.like} 개의 Like
+                                {state.likeCount} 개의 Like
                             </Form.Label>
                             <div>
                                 <Button
                                     className="mr-1"
                                     variant="outline-success"
                                     onClick={LikeClick}
-                                    active={state.likeClick}
-                                    disabled={state.dislikeClick}
+                                    active={like.likeClick}
+                                    disabled={like.dislikeClick}
                                 >
                                     <HandThumbsUpFill />
                                     &nbsp;&nbsp;Like
@@ -229,8 +253,8 @@ const UpdateBoard = ({ match, location, history }) => {
                                     className="mr-1"
                                     variant="outline-danger"
                                     onClick={DislikeClick}
-                                    active={state.dislikeClick}
-                                    disabled={state.likeClick}
+                                    active={like.dislikeClick}
+                                    disabled={like.likeClick}
                                 >
                                     <HandThumbsDownFill />
                                     &nbsp;&nbsp;Dislike
@@ -247,7 +271,7 @@ const UpdateBoard = ({ match, location, history }) => {
                             as="textarea"
                             rows={6}
                             name="content"
-                            defaultValue={userData.content}
+                            defaultValue={state.content}
                             onChange={HandleChange}
                         />
                     </Form.Group>
@@ -270,9 +294,9 @@ const UpdateBoard = ({ match, location, history }) => {
                                     className="mr-1"
                                     variant="info"
                                     onClick={() => {
-                                        refetch({ _id: userid });
-                                        window.location.href('/');
-                                        //history.push('/');
+                                        //refetch({ _id: userid });
+                                        window.location.href = '/';
+                                        // history.replace('/');
                                     }}
                                 >
                                     홈으로
@@ -286,4 +310,4 @@ const UpdateBoard = ({ match, location, history }) => {
     );
 };
 
-export default UpdateBoard;
+export default withRouter(UpdateBoard);
