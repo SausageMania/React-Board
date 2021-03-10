@@ -32,8 +32,9 @@
   > [완료]~~day.js를 이용하여 날짜 형식 구체화~~
   
 ## 현재 게시판 UI
-### **게시판 홈페이지** ![image](https://user-images.githubusercontent.com/46717432/109938149-0bc14c00-7d13-11eb-9d96-5bf095ddd824.png)  
-### **게시글 수정** ![image](https://user-images.githubusercontent.com/46717432/109938265-2b587480-7d13-11eb-9923-aeccc8bfa02e.png)  
-### **게시글 생성** ![image](https://user-images.githubusercontent.com/46717432/109938100-fea45d00-7d12-11eb-9255-f86c6eb53733.png)  
+
+### **게시판 홈페이지** ![image](https://user-images.githubusercontent.com/46717432/110579754-c1c0e600-81aa-11eb-94eb-172dfe8c6ef2.png)  
+### **게시글 수정** ![image](https://user-images.githubusercontent.com/46717432/110579834-ddc48780-81aa-11eb-9aff-0446f69a9a16.png)  
+### **게시글 생성** ![image](https://user-images.githubusercontent.com/46717432/110579795-ceddd500-81aa-11eb-98b2-919db6100fa1.png)
 
 
