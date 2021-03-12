@@ -5,9 +5,10 @@ import { BrowserRouter } from 'react-router-dom';
 import ApolloClient from 'apollo-boost';
 import { ApolloProvider } from '@apollo/react-hooks';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './App.css';
 
 const client = new ApolloClient({
-    uri: 'http://172.31.99.48:4000',
+    uri: 'http://172.26.50.71:5000',
 });
 
 ReactDOM.render(

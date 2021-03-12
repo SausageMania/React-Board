@@ -17,20 +17,22 @@ export const BOARDS_QUERY = gql`
 `;
 export const SEARCH_QUERY = gql`
     query(
+        $BoardId: ID!
         $title: String
         $author: String
         $content: String
-        $page: Int
         $sort: sortingTypes
         $isMatched: Boolean
+        $lastKey: String
     ) {
         searchBoards(
+            BoardId: $BoardId
             title: $title
             author: $author
             content: $content
-            page: $page
             sort: $sort
             isMatched: $isMatched
+            lastKey: $lastKey
         ) {
             _id
             title
@@ -38,7 +40,6 @@ export const SEARCH_QUERY = gql`
             author
             createdAt
             updatedAt
-            seq
             like
             label
         }
@@ -54,8 +55,14 @@ export const TOTAL_COUNT = gql`
 `;
 
 export const SEARCH_COUNT = gql`
-    query($title: String, $author: String, $content: String, $isMatched: Boolean) {
-        getSearchCount(title: $title, author: $author, content: $content, isMatched: $isMatched) {
+    query($title: String, $author: String, $content: String, $isMatched: Boolean, $BoardId: ID!) {
+        getSearchCount(
+            title: $title
+            author: $author
+            content: $content
+            isMatched: $isMatched
+            BoardId: $BoardId
+        ) {
             count
         }
     }

@@ -4,7 +4,7 @@ import { Form, Col, Button } from 'react-bootstrap';
 import { BOARD_QUERY, BOARD_DELETE, BOARD_UPDATE, ADD_LIKE, ADD_DISLIKE } from '../gql/mutation';
 import { HandThumbsUpFill, HandThumbsDownFill } from 'react-bootstrap-icons';
 import Select from 'react-select';
-import { withRouter } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
 
 const options = [
     { value: 'bug', label: 'bug' },
@@ -32,7 +32,7 @@ const UpdateBoard = ({ match, location, history }) => {
     });
 
     const { loading, error, data } = useQuery(BOARD_QUERY, {
-        variables: { _id: userid },
+        variables: { _id: userid, BoardId: 'Board1' },
     });
 
     useEffect(() => {
@@ -56,6 +56,7 @@ const UpdateBoard = ({ match, location, history }) => {
                 query: BOARD_QUERY,
                 variables: {
                     _id: userid,
+                    BoardId: 'Board1',
                 },
             },
         ],
@@ -72,6 +73,7 @@ const UpdateBoard = ({ match, location, history }) => {
                 query: BOARD_QUERY,
                 variables: {
                     _id: userid,
+                    BoardId: 'Board1',
                 },
             },
         ],
@@ -86,6 +88,7 @@ const UpdateBoard = ({ match, location, history }) => {
                 query: BOARD_QUERY,
                 variables: {
                     _id: userid,
+                    BoardId: 'Board1',
                 },
             },
         ],
@@ -99,6 +102,7 @@ const UpdateBoard = ({ match, location, history }) => {
                 query: BOARD_QUERY,
                 variables: {
                     _id: userid,
+                    BoardId: 'Board1',
                 },
             },
         ],
@@ -118,6 +122,7 @@ const UpdateBoard = ({ match, location, history }) => {
         e.preventDefault();
         updateBoard({
             variables: {
+                BoardId: 'Board1',
                 _id: userid,
                 title: state.title,
                 content: state.content,
@@ -129,7 +134,7 @@ const UpdateBoard = ({ match, location, history }) => {
 
     const DeleteClick = e => {
         e.preventDefault();
-        deleteBoard({ variables: { _id: userid } });
+        deleteBoard({ variables: { BoardId: 'Board1', _id: userid } });
         //history.push('/'); //해당 코드에서 문제가 발생한 것으로 보임. 해결하기 위해선 useEffect를 써야할지도,,
     };
 
@@ -140,7 +145,7 @@ const UpdateBoard = ({ match, location, history }) => {
                 ...like,
                 likeClick: true,
             });
-            addLike({ variables: { _id: userid } });
+            addLike({ variables: { _id: userid, BoardId: 'Board1' } });
             alert('좋아요를 누르셨습니다.');
         }
     };
@@ -152,7 +157,7 @@ const UpdateBoard = ({ match, location, history }) => {
                 ...like,
                 dislikeClick: true,
             });
-            if (state.likeCount > 0) addDislike({ variables: { _id: userid } });
+            if (state.likeCount > 0) addDislike({ variables: { _id: userid, BoardId: 'Board1' } });
             alert('싫어요를 누르셨습니다.');
         }
     };
@@ -168,7 +173,24 @@ const UpdateBoard = ({ match, location, history }) => {
     };
 
     if (loading) return <p>Loading...</p>;
-    if (error) return <p>Error</p>;
+    if (error)
+        return (
+            <div
+                className="m-3 p-5"
+                style={{
+                    display: 'flex',
+                    height: '100%',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexFlow: 'column',
+                }}
+            >
+                <p>해당 유저가 존재하지 않습니다.</p>
+                <Link to="/">
+                    <Button variant="success">홈으로 되돌아가기</Button>
+                </Link>
+            </div>
+        );
 
     let defaultLabels = [];
     state.label.forEach(key => defaultLabels.push({ value: key, label: key.replace(' ', '_') }));

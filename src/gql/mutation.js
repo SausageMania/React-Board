@@ -1,8 +1,8 @@
 import gql from 'graphql-tag';
 
 export const BOARD_QUERY = gql`
-    query($_id: ID!) {
-        getBoard(_id: $_id) {
+    query($_id: String!, $BoardId: ID!) {
+        getBoard(_id: $_id, BoardId: $BoardId) {
             title
             content
             author
@@ -13,8 +13,20 @@ export const BOARD_QUERY = gql`
 `;
 
 export const BOARD_CREATE = gql`
-    mutation addBoard($title: String!, $author: String!, $content: String!, $label: [label]) {
-        addBoard(title: $title, author: $author, content: $content, label: $label) {
+    mutation addBoard(
+        $title: String!
+        $author: String!
+        $content: String!
+        $label: [label]
+        $BoardId: ID!
+    ) {
+        addBoard(
+            title: $title
+            author: $author
+            content: $content
+            label: $label
+            BoardId: $BoardId
+        ) {
             title
             author
             content
@@ -24,8 +36,14 @@ export const BOARD_CREATE = gql`
 `;
 
 export const BOARD_UPDATE = gql`
-    mutation updateBoard($_id: ID!, $title: String, $content: String, $label: [label]) {
-        updateBoard(_id: $_id, title: $title, content: $content, label: $label) {
+    mutation updateBoard(
+        $_id: String
+        $title: String
+        $content: String
+        $label: [label]
+        $BoardId: ID!
+    ) {
+        updateBoard(_id: $_id, title: $title, content: $content, label: $label, BoardId: $BoardId) {
             _id
             title
             content
@@ -35,24 +53,24 @@ export const BOARD_UPDATE = gql`
 `;
 
 export const BOARD_DELETE = gql`
-    mutation deleteBoard($_id: ID!) {
-        deleteBoard(_id: $_id) {
+    mutation deleteBoard($_id: String, $BoardId: ID!) {
+        deleteBoard(_id: $_id, BoardId: $BoardId) {
             _id
         }
     }
 `;
 
 export const ADD_LIKE = gql`
-    mutation addLike($_id: ID!) {
-        addLike(_id: $_id) {
+    mutation addLike($_id: String, $BoardId: ID!) {
+        addLike(_id: $_id, BoardId: $BoardId) {
             _id
         }
     }
 `;
 
 export const ADD_DISLIKE = gql`
-    mutation addDislike($_id: ID!) {
-        addDislike(_id: $_id) {
+    mutation addDislike($_id: String, $BoardId: ID!) {
+        addDislike(_id: $_id, BoardId: $BoardId) {
             _id
         }
     }

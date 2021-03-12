@@ -46,6 +46,7 @@ const CreateBoard = ({ history }) => {
                 author: state.author,
                 content: state.content,
                 label: state.label,
+                BoardId: 'Board1',
             },
         });
         console.log(state.label);

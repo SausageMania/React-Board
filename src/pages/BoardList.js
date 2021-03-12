@@ -35,6 +35,7 @@ const BoardList = () => {
             author: search.select.author ? search.state.author : null,
             content: search.select.content ? search.state.content : null,
             isMatched: search.select.match,
+            BoardId: 'Board1',
         },
     }); //검색필터링 된 게시글 갯수(검색하지 않을 시 전체 갯수)
 
@@ -107,8 +108,17 @@ const BoardList = () => {
             <div>
                 <h1 style={{ textAlign: 'center' }}>CRUD 게시판</h1>
                 <br />
+
+                <div style={{ display: 'flex', flexFlow: 'row-reverse' }}>
+                    <Link to="/create">
+                        <Button variant="info">게시글 생성</Button>
+                    </Link>
+                </div>
+            </div>
+
+            <div>
                 <Form
-                    className="mb-1"
+                    className="mb-1 mt-3"
                     style={{ display: 'flex', justifyContent: 'space-between' }}
                     inline
                 >
@@ -184,12 +194,7 @@ const BoardList = () => {
 
             <div>
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    <Pages />
-                </div>
-                <div style={{ float: 'right' }}>
-                    <Link to="/create">
-                        <Button variant="info">게시글 생성</Button>
-                    </Link>
+                    {false && <Pages />}
                 </div>
             </div>
             <Route path="/create" component={CreateBoard} />
@@ -198,9 +203,10 @@ const BoardList = () => {
 };
 
 const ShowList = props => {
-    const { active, search } = props.info;
+    const { search } = props.info;
     const [sort, setState] = useState('recent');
     const [realData, setRealData] = useState([]);
+    const [lastKey, setKey] = useState(null);
 
     const searchQuery = useQuery(SEARCH_QUERY, {
         variables: {
@@ -208,8 +214,9 @@ const ShowList = props => {
             author: search.select.author ? search.state.author : null,
             content: search.select.content ? search.state.content : null,
             isMatched: search.select.match,
-            page: active,
             sort: sort,
+            BoardId: 'Board1',
+            lastKey: lastKey,
         },
     }); //검색필터링된 게시글(검색하지 않을 시 전체 데이터)
 
@@ -217,7 +224,8 @@ const ShowList = props => {
 
     useEffect(() => {
         if (data) {
-            setRealData(data.searchBoards);
+            setRealData(realData => realData.concat(data.searchBoards));
+            console.log(data.searchBoards);
         }
         return () => {
             setRealData([]);
@@ -228,84 +236,89 @@ const ShowList = props => {
     if (error) return <p>Board error</p>;
 
     const list = realData.map((board, index) => <Board key={board._id} seq={index} info={board} />);
+
     const SortClick = e => {
         //정렬 을 위해 테이블을 클릭할 경우
         const sortValue = e.target.id;
         setState(sortValue);
+    };
+
+    const MoreClick = e => {
+        const lastIndex = realData.length - 1;
+        setKey(realData[lastIndex]._id);
     };
     return (
         <div>
             <Table striped bordered hover>
                 <thead>
                     <tr>
-                        <th onClick={SortClick} id="seq">
-                            No.
-                        </th>
+                        <th id="seq">No.</th>
                         <th>제목</th>
                         <th>작성자</th>
                         <th onClick={SortClick} id="recent">
                             생성날짜
                         </th>
                         <th>수정날짜</th>
-                        <th onClick={SortClick} id="like">
-                            Like
-                        </th>
+                        <th id="like">Like</th>
                     </tr>
                 </thead>
                 <tbody>{list}</tbody>
             </Table>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <Button onClick={MoreClick}>더보기</Button>
+            </div>
         </div>
     );
 };
 
 const Board = props => {
-    const { _id, title, author, createdAt, updatedAt, like, seq, label } = props.info;
+    const { _id, title, author, createdAt, updatedAt, like, label } = props.info;
     const labelList = label.map((data, index) => {
         switch (data) {
             case 'help_wanted':
                 return (
-                    <Badge key={index} variant="primary" className="mr-1">
+                    <Badge key={_id + index} variant="primary" className="mr-1">
                         help wanted
                     </Badge>
                 );
             case 'bug':
                 return (
-                    <Badge key={index} variant="danger" className="mr-1">
+                    <Badge key={_id + index} variant="danger" className="mr-1">
                         bug
                     </Badge>
                 );
             case 'documention':
                 return (
-                    <Badge key={index} variant="secondary" className="mr-1">
+                    <Badge key={_id + index} variant="secondary" className="mr-1">
                         documention
                     </Badge>
                 );
             case 'enhancement':
                 return (
-                    <Badge key={index} variant="success" className="mr-1">
+                    <Badge key={_id + index} variant="success" className="mr-1">
                         enhancement
                     </Badge>
                 );
             case 'duplicate':
                 return (
-                    <Badge key={index} variant="warning" className="mr-1">
+                    <Badge key={_id + index} variant="warning" className="mr-1">
                         duplicated
                     </Badge>
                 );
             case 'question':
                 return (
-                    <Badge key={index} variant="dark" className="mr-1">
+                    <Badge key={_id + index} variant="dark" className="mr-1">
                         question
                     </Badge>
                 );
             case 'good_first_issue':
                 return (
-                    <Badge key={index} variant="light" className="mr-1">
+                    <Badge key={_id + index} variant="light" className="mr-1">
                         good first issue
                     </Badge>
                 );
             default:
-                return <p>nothing..</p>;
+                return <p key={_id + index}>nothing..</p>;
         }
     });
 
@@ -318,7 +331,7 @@ const Board = props => {
     };
     return (
         <tr onClick={handleClick}>
-            <td>{seq}</td>
+            <td>{props.seq + 1}</td>
             <td>
                 {title}
                 <p></p>
