@@ -1,21 +1,6 @@
 import gql from 'graphql-tag';
 
-export const BOARDS_QUERY = gql`
-    query($sort: sortingTypes, $page: Int) {
-        getBoards(sort: $sort, page: $page) {
-            _id
-            title
-            content
-            author
-            createdAt
-            updatedAt
-            seq
-            like
-            label
-        }
-    }
-`;
-export const SEARCH_QUERY = gql`
+export const SCROLL_QUERY = gql`
     query(
         $BoardId: ID!
         $title: String
@@ -23,7 +8,10 @@ export const SEARCH_QUERY = gql`
         $content: String
         $sort: sortingTypes
         $isMatched: Boolean
+        $limit: Int
         $lastKey: String
+        $createdAt: Date
+        $like: Int
     ) {
         searchBoards(
             BoardId: $BoardId
@@ -32,7 +20,10 @@ export const SEARCH_QUERY = gql`
             content: $content
             sort: $sort
             isMatched: $isMatched
+            limit: $limit
             lastKey: $lastKey
+            createdAt: $createdAt
+            like: $like
         ) {
             _id
             title
@@ -46,10 +37,35 @@ export const SEARCH_QUERY = gql`
     }
 `;
 
-export const TOTAL_COUNT = gql`
-    {
-        getBoardsCount {
-            count
+export const PAGINATION_QUERY = gql`
+    query(
+        $BoardId: ID!
+        $title: String
+        $author: String
+        $content: String
+        $sort: sortingTypes
+        $isMatched: Boolean
+        $limit: Int
+        $page: Int
+    ) {
+        getPagenationBoards(
+            BoardId: $BoardId
+            title: $title
+            author: $author
+            content: $content
+            sort: $sort
+            isMatched: $isMatched
+            limit: $limit
+            page: $page
+        ) {
+            _id
+            title
+            content
+            author
+            createdAt
+            updatedAt
+            like
+            label
         }
     }
 `;

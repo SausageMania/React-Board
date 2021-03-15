@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useQuery } from '@apollo/react-hooks';
 import { Table, Button, Form, Pagination, Badge, InputGroup } from 'react-bootstrap';
-import { Route, Link, useHistory } from 'react-router-dom';
-import CreateBoard from './CreateBoard';
-import { SEARCH_QUERY, SEARCH_COUNT } from '../gql/query';
+import { Link, useHistory } from 'react-router-dom';
+import { PAGINATION_QUERY, SEARCH_COUNT } from '../gql/query';
 import * as dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { withRouter } from 'react-router-dom';
 
-//import { CaretDownFill } from 'react-bootstrap-icons';
+import { CaretDownFill, CaretUpFill } from 'react-bootstrap-icons';
 
-const BoardList = () => {
+const BoardList_Pagination = () => {
     const [state, setState] = useState({
         title: '',
         author: '',
@@ -31,11 +30,11 @@ const BoardList = () => {
 
     const searchCount = useQuery(SEARCH_COUNT, {
         variables: {
+            BoardId: 'Board1',
             title: search.select.title ? search.state.title : null,
             author: search.select.author ? search.state.author : null,
             content: search.select.content ? search.state.content : null,
             isMatched: search.select.match,
-            BoardId: 'Board1',
         },
     }); //검색필터링 된 게시글 갯수(검색하지 않을 시 전체 갯수)
 
@@ -107,18 +106,18 @@ const BoardList = () => {
         <div className="m-3 p-5">
             <div>
                 <h1 style={{ textAlign: 'center' }}>CRUD 게시판</h1>
-                <br />
-
-                <div style={{ display: 'flex', flexFlow: 'row-reverse' }}>
+                <div className="mb-2" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Link to="/scroll">
+                        <Button className="mr-2" variant="warning">
+                            Scroll 기반
+                        </Button>
+                    </Link>
                     <Link to="/create">
                         <Button variant="info">게시글 생성</Button>
                     </Link>
                 </div>
-            </div>
-
-            <div>
                 <Form
-                    className="mb-1 mt-3"
+                    className="mb-1"
                     style={{ display: 'flex', justifyContent: 'space-between' }}
                     inline
                 >
@@ -194,29 +193,27 @@ const BoardList = () => {
 
             <div>
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    {false && <Pages />}
+                    <Pages />
                 </div>
             </div>
-            <Route path="/create" component={CreateBoard} />
         </div>
     );
 };
 
 const ShowList = props => {
-    const { search } = props.info;
-    const [sort, setState] = useState('recent');
+    const { active, search } = props.info;
+    const [sort, setState] = useState('desc');
     const [realData, setRealData] = useState([]);
-    const [lastKey, setKey] = useState(null);
 
-    const searchQuery = useQuery(SEARCH_QUERY, {
+    const searchQuery = useQuery(PAGINATION_QUERY, {
         variables: {
+            BoardId: 'Board1',
             title: search.select.title ? search.state.title : null,
             author: search.select.author ? search.state.author : null,
             content: search.select.content ? search.state.content : null,
             isMatched: search.select.match,
+            page: active,
             sort: sort,
-            BoardId: 'Board1',
-            lastKey: lastKey,
         },
     }); //검색필터링된 게시글(검색하지 않을 시 전체 데이터)
 
@@ -224,8 +221,7 @@ const ShowList = props => {
 
     useEffect(() => {
         if (data) {
-            setRealData(realData => realData.concat(data.searchBoards));
-            console.log(data.searchBoards);
+            setRealData(data.getPagenationBoards);
         }
         return () => {
             setRealData([]);
@@ -235,18 +231,43 @@ const ShowList = props => {
     if (loading) return <p>Board loading...</p>;
     if (error) return <p>Board error</p>;
 
-    const list = realData.map((board, index) => <Board key={board._id} seq={index} info={board} />);
-
+    const list = realData.map((board, index) => (
+        <Board page={active} key={board._id} seq={index} info={board} />
+    ));
     const SortClick = e => {
         //정렬 을 위해 테이블을 클릭할 경우
-        const sortValue = e.target.id;
-        setState(sortValue);
+        e.preventDefault();
+        if (e.target.id === 'recent') {
+            if (sort === 'desc') setState('asc');
+            else setState('desc');
+        } else {
+            if (sort === 'like') setState('dislike');
+            else setState('like');
+        }
     };
 
-    const MoreClick = e => {
-        const lastIndex = realData.length - 1;
-        setKey(realData[lastIndex]._id);
+    const RecentSort = () => {
+        switch (sort) {
+            case 'desc':
+                return <CaretDownFill />;
+            case 'asc':
+                return <CaretUpFill />;
+            default:
+                return '';
+        }
     };
+
+    const LikeSort = () => {
+        switch (sort) {
+            case 'like':
+                return <CaretUpFill />;
+            case 'dislike':
+                return <CaretDownFill />;
+            default:
+                return '';
+        }
+    };
+
     return (
         <div>
             <Table striped bordered hover>
@@ -256,17 +277,16 @@ const ShowList = props => {
                         <th>제목</th>
                         <th>작성자</th>
                         <th onClick={SortClick} id="recent">
-                            생성날짜
+                            생성날짜 <RecentSort />
                         </th>
                         <th>수정날짜</th>
-                        <th id="like">Like</th>
+                        <th onClick={SortClick} id="like">
+                            Like <LikeSort />
+                        </th>
                     </tr>
                 </thead>
                 <tbody>{list}</tbody>
             </Table>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <Button onClick={MoreClick}>더보기</Button>
-            </div>
         </div>
     );
 };
@@ -325,13 +345,11 @@ const Board = props => {
     const history = useHistory();
 
     const handleClick = () => {
-        // window.location.href('/');
-        // window.location.href(`/board/${_id}`);
         history.replace(`/board/${_id}`);
     };
     return (
         <tr onClick={handleClick}>
-            <td>{props.seq + 1}</td>
+            <td>{props.seq + 1 + 5 * (props.page - 1)}</td>
             <td>
                 {title}
                 <p></p>
@@ -360,4 +378,4 @@ const UpdateFromNow = props => {
     );
 };
 
-export default withRouter(BoardList);
+export default withRouter(BoardList_Pagination);

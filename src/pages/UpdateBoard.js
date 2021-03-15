@@ -41,6 +41,7 @@ const UpdateBoard = ({ match, location, history }) => {
             setState({
                 title: userData.title,
                 content: userData.content,
+                author: userData.author,
                 label: userData.label,
                 likeCount: userData.like,
             });
