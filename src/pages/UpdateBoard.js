@@ -64,8 +64,8 @@ const UpdateBoard = ({ match, location, history }) => {
         onCompleted() {
             console.log('onCompleted');
 
-            // window.location.href = '/';
-            history.push('/');
+            window.location.href = '/';
+            // history.push('/');
         },
     });
     const [deleteBoard] = useMutation(BOARD_DELETE, {

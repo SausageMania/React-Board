@@ -234,10 +234,9 @@ const ShowList = props => {
     const list = realData.map((board, index) => (
         <Board page={active} key={board._id} seq={index} info={board} />
     ));
-    const SortClick = e => {
+    const SortClick = value => {
         //정렬 을 위해 테이블을 클릭할 경우
-        e.preventDefault();
-        if (e.target.id === 'recent') {
+        if (value === 'recent') {
             if (sort === 'desc') setState('asc');
             else setState('desc');
         } else {
@@ -260,9 +259,9 @@ const ShowList = props => {
     const LikeSort = () => {
         switch (sort) {
             case 'like':
-                return <CaretUpFill />;
-            case 'dislike':
                 return <CaretDownFill />;
+            case 'dislike':
+                return <CaretUpFill />;
             default:
                 return '';
         }
@@ -276,11 +275,11 @@ const ShowList = props => {
                         <th id="seq">No.</th>
                         <th>제목</th>
                         <th>작성자</th>
-                        <th onClick={SortClick} id="recent">
+                        <th onClick={() => SortClick('recent')} id="recent">
                             생성날짜 <RecentSort />
                         </th>
                         <th>수정날짜</th>
-                        <th onClick={SortClick} id="like">
+                        <th onClick={() => SortClick('like')} id="like">
                             Like <LikeSort />
                         </th>
                     </tr>
