@@ -38,4 +38,5 @@
 ### **게시글 수정** ![image](https://user-images.githubusercontent.com/46717432/110579834-ddc48780-81aa-11eb-9aff-0446f69a9a16.png)  
 ### **게시글 생성** ![image](https://user-images.githubusercontent.com/46717432/110579795-ceddd500-81aa-11eb-98b2-919db6100fa1.png)
 
+스크린샷 2021-03-15 오후 6.01.07![image](https://user-images.githubusercontent.com/46717432/111599231-68446100-8813-11eb-9a45-62c3a3522f8f.png)
 
